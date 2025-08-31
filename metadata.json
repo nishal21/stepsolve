@@ -1,0 +1,7 @@
+{
+  "name": "StepSolve",
+  "description": "StepSolve is an AI-powered calculator that not only solves complex problems but also provides step-by-step reasoning, helping you understand the 'why' behind the math.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

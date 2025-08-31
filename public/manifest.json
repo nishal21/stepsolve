@@ -1,0 +1,16 @@
+{
+  "name": "StepSolve",
+  "short_name": "StepSolve",
+  "description": "An AI-powered calculator that provides step-by-step solutions.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#121212",
+  "theme_color": "#007AFF",
+  "icons": [
+    {
+      "src": "/public/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
