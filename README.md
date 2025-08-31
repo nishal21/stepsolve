@@ -59,7 +59,7 @@ Built with modern web technologies and powered by Google's Gemini AI, StepSolve 
 
 ## 🚀 Demo
 
-Experience StepSolve in action: [Live Demo](https://ai.studio/apps/drive/1JNH99G8rb5pzWfOgLGmTEaoQNTfLPNTh)
+Experience StepSolve in action: [Live Demo](https://stepsolve.netlify.app)
 
 ---
 
@@ -215,11 +215,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Contact
 
-**Project Maintainer:** [Your Name]
-- GitHub: [@your-username](https://github.com/your-username)
-- Email: your.email@example.com
+**Project Maintainer:** [Nishal K]
+- GitHub: [@nishal21](https://github.com/nishal21)
+- Email: nishalamv@gmail.com
 
-**Project Link:** [https://github.com/your-username/stepsolve](https://github.com/your-username/stepsolve)
+**Project Link:** [https://github.com/nishal21/stepsolve](**https://github.com/your-username/stepsolve)
 
 ---
 
