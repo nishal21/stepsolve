@@ -1,4 +1,5 @@
-import React, { useState, useCallback, useEffect } from 'react';
+
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Header } from './components/Header';
 import { CalculatorDisplay } from './components/CalculatorDisplay';
 import { ExplanationPane } from './components/ExplanationPane';
@@ -53,6 +54,7 @@ const App: React.FC = () => {
   const [isConfirmClearOpen, setIsConfirmClearOpen] = useState<boolean>(false);
   const [isReferenceOpen, setIsReferenceOpen] = useState<boolean>(false);
 
+  const calculationIdRef = useRef(0);
   const [apiKey, setApiKey] = useState<string | null>(() => localStorage.getItem('geminiApiKey'));
   const isOnline = useOnlineStatus();
 
@@ -103,18 +105,21 @@ const App: React.FC = () => {
   }, []);
 
   const handleCalculate = useCallback(async () => {
-    const problem = image ? (currentResult?.detectedEquation || "image problem") : equation;
+    const problem = equation;
     if (!problem.trim() && !image) return;
+
+    calculationIdRef.current += 1;
+    const currentCalculationId = calculationIdRef.current;
 
     setIsLoading(true);
     setError(null);
     setCurrentResult(null);
 
-    const isOfflineSolvable = canSolveOffline(problem);
-
     try {
         let response: CalculationResponse;
-        if (!isOnline || isOfflineSolvable) {
+        const isOfflineSolvable = canSolveOffline(problem);
+
+        if (!isOnline || (isOfflineSolvable && !image)) {
            try {
              response = solveOffline(problem);
            } catch (offlineError) {
@@ -131,34 +136,44 @@ const App: React.FC = () => {
             response = await explainCalculation(problem, apiKey, image ?? undefined);
         }
 
-        if (response.error) {
-          throw new Error(response.error);
+        if (currentCalculationId === calculationIdRef.current) {
+            if (response.error) {
+              throw new Error(response.error);
+            }
+          
+            setCurrentResult(response);
+          
+            if (response.finalAnswer) {
+                 const newHistoryItem: HistoryItem = {
+                    id: Date.now(),
+                    equation: response.detectedEquation || problem,
+                    result: response,
+                    image: image || undefined,
+                };
+                setHistory(prev => [newHistoryItem, ...prev.filter(h => h.equation !== newHistoryItem.equation)]);
+            }
+           if (response.detectedEquation) {
+             setEquation(response.detectedEquation);
+           }
         }
-      
-        setCurrentResult(response);
-      
-        if (response.finalAnswer) {
-             const newHistoryItem: HistoryItem = {
-                id: Date.now(),
-                equation: response.detectedEquation || problem,
-                result: response,
-                image: image || undefined,
-            };
-            setHistory(prev => [newHistoryItem, ...prev.filter(h => h.equation !== newHistoryItem.equation)]);
-        }
-       if (response.detectedEquation) {
-         setEquation(response.detectedEquation);
-       }
 
     } catch (err) {
-        const message = (err instanceof Error) ? err.message : 'An unknown error occurred.';
-        setError(message);
+        if (currentCalculationId === calculationIdRef.current) {
+            const message = (err instanceof Error) ? err.message : 'An unknown error occurred.';
+            setError(message);
+        }
     } finally {
-        setIsLoading(false);
+        if (currentCalculationId === calculationIdRef.current) {
+            setIsLoading(false);
+        }
     }
-  }, [equation, image, apiKey, isOnline, currentResult]);
+  }, [equation, image, apiKey, isOnline]);
 
   const handleHistoryClick = (item: HistoryItem) => {
+    // Invalidate any ongoing calculation by incrementing the ref
+    calculationIdRef.current += 1;
+    setIsLoading(false); // Ensure loading state is reset
+
     setEquation(item.equation);
     setCurrentResult(item.result);
     setImage(item.image || null);
@@ -228,7 +243,13 @@ const App: React.FC = () => {
           <Header onOpenSettings={() => setIsSettingsOpen(true)} onOpenReference={() => setIsReferenceOpen(true)} />
           {!isOnline && <OfflineIndicator />}
           <div className="flex-grow flex flex-col md:flex-row overflow-hidden">
-            <HistorySidebar history={history} onItemClick={handleHistoryClick} onClear={handleClearHistory} onShareItem={handleOpenShareModal} />
+            <HistorySidebar 
+                history={history} 
+                onItemClick={handleHistoryClick} 
+                onClear={handleClearHistory} 
+                onShareItem={handleOpenShareModal} 
+                isLoading={isLoading} 
+            />
             <main className="flex-grow flex flex-col p-4 sm:p-6 overflow-hidden">
               <CalculatorDisplay
                 equation={equation}
