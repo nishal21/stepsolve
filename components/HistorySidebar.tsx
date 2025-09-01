@@ -3,6 +3,7 @@ import type { HistoryItem } from '../types';
 import { HistoryIcon } from './icons/HistoryIcon';
 import { ShareIcon } from './icons/ShareIcon';
 import { XIcon } from './icons/XIcon';
+import { useMathJax } from '../hooks/useMathJax';
 
 interface HistorySidebarProps {
   history: HistoryItem[];
@@ -13,6 +14,7 @@ interface HistorySidebarProps {
 
 export const HistorySidebar: React.FC<HistorySidebarProps> = ({ history, onItemClick, onShareItem, onClear }) => {
     const [isOpen, setIsOpen] = useState(false);
+    const mathJaxRef = useMathJax([history]);
 
   return (
     <>
@@ -42,31 +44,33 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({ history, onItemC
         
         {history.length > 0 ? (
           <>
-            <ul className="flex-grow overflow-y-auto p-2">
-              {history.map((item) => (
-                <li key={item.id} className="relative group">
-                  <button
-                    onClick={() => {
-                      onItemClick(item);
-                      setIsOpen(false);
-                    }}
-                    className="w-full text-left p-3 my-1 rounded-lg hover:bg-border transition-colors duration-200"
-                  >
-                    <p className="font-mono truncate text-sm text-text-primary">{item.equation}</p>
-                    <p className="text-xs text-text-secondary truncate">
-                      {item.result.finalAnswer}
-                    </p>
-                  </button>
-                   <button
-                    onClick={() => onShareItem(item)}
-                    className="absolute top-1/2 -translate-y-1/2 right-3 p-2 rounded-full text-text-secondary hover:bg-background hover:text-text-primary opacity-0 group-hover:opacity-100 transition-opacity"
-                    aria-label="Share calculation"
-                  >
-                    <ShareIcon className="w-5 h-5" />
-                  </button>
-                </li>
-              ))}
-            </ul>
+            <div ref={mathJaxRef} className="flex-grow overflow-y-auto">
+              <ul className="p-2">
+                {history.map((item) => (
+                  <li key={item.id} className="relative group">
+                    <button
+                      onClick={() => {
+                        onItemClick(item);
+                        setIsOpen(false);
+                      }}
+                      className="w-full text-left p-3 my-1 rounded-lg hover:bg-border transition-colors duration-200"
+                    >
+                      <p className="font-mono text-sm text-text-primary overflow-x-auto py-1">${item.equation}$</p>
+                      <p className="text-xs text-text-secondary overflow-x-auto py-1">
+                        ${item.result.finalAnswer}$
+                      </p>
+                    </button>
+                     <button
+                      onClick={() => onShareItem(item)}
+                      className="absolute top-1/2 -translate-y-1/2 right-3 p-2 rounded-full text-text-secondary hover:bg-background hover:text-text-primary opacity-0 group-hover:opacity-100 transition-opacity"
+                      aria-label="Share calculation"
+                    >
+                      <ShareIcon className="w-5 h-5" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
             <div className="p-4 border-t border-border flex-shrink-0">
                 <button
                     onClick={onClear}
